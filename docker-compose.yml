@@ -1,0 +1,44 @@
+
+
+services:
+  # Servicio para la aplicación Node.js
+  app:
+    # Utiliza un Dockerfile para construir la imagen de la aplicación.
+    # El Dockerfile debe estar en el mismo directorio (./)
+    build: . 
+    # Mapea el puerto de la aplicación (e.g., 3000) al puerto de tu máquina host.
+    ports:
+      - "30000:3000"
+    # Monta el código fuente local dentro del contenedor. 
+    # Esto permite que los cambios de código se reflejen automáticamente (si usas nodemon).
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules # Evita sobreescribir node_modules del contenedor con el local
+    # Establece las variables de entorno para que la app sepa dónde encontrar la DB
+    environment:
+      # Usa el nombre del servicio de la DB (db) como hostname
+      NODE_ENV: development
+      PORT: 3000
+      MONGO_URI: mongodb://db:27017/nombre_de_tu_db
+      HOST_PORT: 30000  # Puerto de host para usar fuera de docker
+    # Depende del servicio 'db' para asegurar que la DB inicie primero
+    depends_on:
+      - db
+    # Comando para iniciar la aplicación (ejemplo: usar nodemon para desarrollo)
+    # Cambia esto por tu comando de inicio (ej: npm start)
+    command: npm run dev 
+
+  # Servicio para la base de datos MongoDB
+  db:
+    # Imagen oficial de MongoDB
+    image: mongo 
+    # Mapea el puerto estándar de MongoDB 
+    ports:
+      - "27016:27017"
+    # Usa un volumen persistente para guardar los datos de la base de datos
+    volumes:
+      - mongodb_data:/data/db
+
+# Definición de volúmenes para persistencia de datos
+volumes:
+  mongodb_data:
